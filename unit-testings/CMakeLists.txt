@@ -47,3 +47,43 @@ ADD_TEST(test_model-base-ekf-flex-estimator-imu_withComBias_withForcesSensors te
 ADD_TEST(zmpEstimation zmpEstimation)
 
 #ADD_TEST(real-offline-flexibility-estimator real-offline-flexibility-estimator)
+
+#### Data
+set(DATA_FOLDER ${CMAKE_SOURCE_DIR}/unit-testings/inputFiles)
+
+
+add_custom_command(TARGET test_model-base-ekf-flex-estimator-imu POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DATA_FOLDER}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DATA_FOLDER}/WOforcesWOcombias
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WOforcesWOcombias/source_state.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WOforcesWOcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WOforcesWOcombias/source_input.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WOforcesWOcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WOforcesWOcombias/source_measurement.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WOforcesWOcombias/
+)
+
+
+
+add_custom_command(TARGET test_model-base-ekf-flex-estimator-imu_withComBias_withForcesSensors POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DATA_FOLDER}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${DATA_FOLDER}/WforcesWcombias
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_state.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_input.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_measurement.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_inovation.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_predictedSensors.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_predictedState.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_simulatedSensors.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+  COMMAND ${CMAKE_COMMAND} -E copy ${DATA_FOLDER}/WforcesWcombias/source_stateCovariance.dat
+  ${CMAKE_BINARY_DIR}/unit-testings/inputFiles/WforcesWcombias/
+)
+
+
