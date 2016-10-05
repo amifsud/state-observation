@@ -1,0 +1,38 @@
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
+
+INCLUDE (${CMAKE_SOURCE_DIR}/cmake/python.cmake)
+
+PROJECT (state_observation_py)
+
+# Dependencies.
+FINDPYTHON ()
+ADD_REQUIRED_DEPENDENCY ("eigenpy >= 1.3.0")
+
+# Set the include directories.
+INCLUDE_DIRECTORIES ("include/")
+INCLUDE_DIRECTORIES (${PYTHON_INCLUDE_DIR})
+INCLUDE_DIRECTORIES (${PYTHON_INCLUDE_DIR2})
+
+# Create library.
+FILE (GLOB_RECURSE ${PROJECT_NAME}_SOURCES "src/*.cpp")
+SET (${PROJECT_NAME}_LIB ${PROJECT_NAME})
+ADD_LIBRARY (${${PROJECT_NAME}_LIB} SHARED ${${PROJECT_NAME}_SOURCES})
+TARGET_LINK_LIBRARIES (${${PROJECT_NAME}_LIB} ${PYTHON_LIBRARY} boost_python state-observation)
+PKG_CONFIG_USE_DEPENDENCY(${${PROJECT_NAME}_LIB} eigenpy)
+
+# Python sources.
+FILE (GLOB_RECURSE ${PROJECT_NAME}_PYTHON_SOURCES "src/python/*.py")
+
+# Install.
+INSTALL (
+	DIRECTORY "include/state-observation"
+	DESTINATION "include"
+	)
+INSTALL (
+	TARGETS ${${PROJECT_NAME}_LIB}
+	DESTINATION "${PYTHON_SITELIB}/state_observation"
+	)
+INSTALL (
+	FILES ${${PROJECT_NAME}_PYTHON_SOURCES}
+	DESTINATION "${PYTHON_SITELIB}/state_observation"
+	)
