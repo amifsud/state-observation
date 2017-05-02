@@ -94,6 +94,16 @@ namespace flexibilityEstimation
         virtual Vector getMomentaDotFromKinematics();
         virtual Vector getForcesAndMoments();
 
+        virtual void computeFD(const bool & b)
+        {
+            computeFD_=b;
+        }
+
+        virtual void setAsynchronousFD(const bool & b)
+        {
+            asynchronousFD_=b;
+        }
+
         // get state covariance
         stateObservation::Vector getStateCovariance() const
         {
@@ -270,6 +280,9 @@ namespace flexibilityEstimation
         Vector3 limitTorques_;
         Vector3 limitForces_;
         bool limitOn_;
+
+        bool computeFD_;
+        bool asynchronousFD_;
 
         struct optimization
         {
