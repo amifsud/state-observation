@@ -114,7 +114,7 @@ int test()
 
     // For measurement vector
     bool withUnmodeledForces_ = false;
-    bool withForceSensors_=true;
+    bool withForceSensors_=false;
     bool withAbsolutePose_ = false;
 
     // For state vector
@@ -122,8 +122,8 @@ int test()
 
     // Time
     const double dt=5e-3;
-    const unsigned kinit=10000; //3500; //3758; //
-    const unsigned kmax=11500; //5700; //5100; //
+    const unsigned kinit=15000;//7500; //10500; //3500; //3758; //
+    const unsigned kmax=18000;//13500; //12500; //5700; //5100; //
 
     // Fix sizes
     const unsigned measurementSizeBase=6;
@@ -146,32 +146,33 @@ int test()
      std::cout << "Loading the number of supports file" << std::endl;
      nbSupport.getFromFile("source_nbSupport.dat",1,1);
 
-     // CoM bias
-     IndexedMatrixArray bias;
-     std::cout << "Loading comBias file" << std::endl;
-     bias.getFromFile("source_comBias.dat",1,35);
+     // State
+     IndexedMatrixArray state;
+     std::cout << "Loading state file" << std::endl;
+     state.getFromFile("source_state.dat",1,35);
 
-     // Zmp ref
-     IndexedMatrixArray zmpRef;
-     std::cout << "Loading zmpRef file" << std::endl;
-     zmpRef.getFromFile("source_zmpRef.dat",1,3);
+//     // Zmp ref
+//     IndexedMatrixArray zmpRef;
+//     std::cout << "Loading zmpRef file" << std::endl;
+//     zmpRef.getFromFile("source_zmpRef.dat",1,3);
 
     /// Definition of ouptut vectors 
+     IndexedMatrixArray x_input;
      // State: what we want
      IndexedMatrixArray x_output;
-     // State: what we want
-     IndexedMatrixArray xPredicted_output;
+//     // State: what we want
+//     IndexedMatrixArray xPredicted_output;
      // Measurement
      IndexedMatrixArray y_output;
      // Input
      IndexedMatrixArray u_output;
 
-     // Zmp from sensors
-     IndexedMatrixArray sensorZmp_output;
-     // Zmp from filter
-     IndexedMatrixArray filteredZmp_output;
-     // reference Zmp
-     IndexedMatrixArray referenceZmp_output;
+//     // Zmp from sensors
+//     IndexedMatrixArray sensorZmp_output;
+//     // Zmp from filter
+//     IndexedMatrixArray filteredZmp_output;
+//     // reference Zmp
+//     IndexedMatrixArray referenceZmp_output;
 
     std::cout << "Creating estimator" <<std::endl;
 
@@ -181,10 +182,20 @@ int test()
     // Model
     est.setContactModel(1);
     est.setRobotMass(56.8);
-    est.setKfe(40000*Matrix3::Identity());
-    est.setKte(350*Matrix3::Identity());
+
+    est.setKfe(200000*Matrix3::Identity());
+    est.setKte(600*Matrix3::Identity());
     est.setKfv(600*Matrix3::Identity());
     est.setKtv(10*Matrix3::Identity());
+
+    est.setKfeRopes(10000*Matrix3::Identity());
+    est.setKteRopes(600*Matrix3::Identity());
+    Matrix3 mat;
+    mat << 300,0,0,
+           0,300,0,
+           0,0,800;
+    est.setKfvRopes(mat);
+    est.setKtvRopes(60*Matrix3::Identity());
 
     // Config
     est.setWithUnmodeledForces(withUnmodeledForces_);
@@ -200,7 +211,7 @@ int test()
     R_.block(3,3,3,3)*=1.e-6;
     est.setMeasurementNoiseCovariance(R_);
     est.setUnmodeledForceVariance(1e-13);
-    est.setForceVariance(1.e-6);
+    est.setForceVariance(1.e-8);
     est.setAbsolutePosVariance(1e-4);
 
     // Process noise covariance
@@ -208,7 +219,7 @@ int test()
     Q_.block(0,0,12,12)*=1.e-8;
     Q_.block(12,12,12,12)*=1.e-4;
     Q_.block(24,24,6,6)*=1.e-2;
-    Q_.block(30,30,2,2)*=1.e-7;
+    Q_.block(30,30,2,2)*=1.e-15;
     Q_.block(32,32,3,3)*=1.e-8;
     est.setProcessNoiseCovariance(Q_);
 
@@ -218,10 +229,10 @@ int test()
     Vector xPredicted; xPredicted.resize(stateSize);
     unsigned contactNbr, inputSize, measurementSize;
 
-    stateObservation::IndexedMatrixArray measurementForces, filteredForces, inputFeetPositions;
-    stateObservation::Vector sensorZmp, filteredZmp;
-    stateObservation::Vector6 filteredForcesk, measurementForcesk;
-    stateObservation::Matrix4 inputFeetPositionsk;
+//    stateObservation::IndexedMatrixArray measurementForces, filteredForces, inputFeetPositions;
+//    stateObservation::Vector sensorZmp, filteredZmp;
+//    stateObservation::Vector6 filteredForcesk, measurementForcesk;
+//    stateObservation::Matrix4 inputFeetPositionsk;
 
     std::cout << "Beginning reconstruction "<<std::endl;
 
@@ -245,53 +256,56 @@ int test()
         input = (u[k+1].block(0,0,1,inputSize)).transpose();
         est.setMeasurementInput(input);
 
-        xPredicted = est.getEKF().getFunctor()->stateDynamics(x,(u[k-1].block(0,0,1,inputSize)).transpose(),0);
-        xPredicted.segment(stateObservation::flexibilityEstimation::IMUElasticLocalFrameDynamicalSystem::state::fc,12)
-               = x.segment(stateObservation::flexibilityEstimation::IMUElasticLocalFrameDynamicalSystem::state::fc,12);
+//        xPredicted = est.getEKF().getFunctor()->stateDynamics(x,(u[k-1].block(0,0,1,inputSize)).transpose(),0);
+//        xPredicted.segment(stateObservation::flexibilityEstimation::IMUElasticLocalFrameDynamicalSystem::state::fc,12)
+//               = x.segment(stateObservation::flexibilityEstimation::IMUElasticLocalFrameDynamicalSystem::state::fc,12);
 
         x = est.getFlexibilityVector();
 
-        // Compute Zmp from sensor and filter
-        for(unsigned i=0;i<contactNbr;++i)
-        {
-            measurementForcesk = y[k].block<1,6>(0,measurementSizeBase+withUnmodeledForces_*6+i*6).transpose();
-            filteredForcesk = x.segment<6>(stateObservation::flexibilityEstimation::IMUElasticLocalFrameDynamicalSystem::state::fc+i*6);
-            inputFeetPositionsk = kine::vector6ToHomogeneousMatrix(u[k].block<1,6>(0,inputSizeBase+i*12)).transpose();
-
-//            measurementForcesk.segment<3>(0) = inputFeetPositionsk.block(0,0,3,3).transpose()*measurementForcesk.segment<3>(0);
-//            measurementForcesk.segment<3>(3) = inputFeetPositionsk.block(0,0,3,3).transpose()*measurementForcesk.segment<3>(3)
-//                                               +kine::skewSymmetric(inputFeetPositionsk.block(0,0,3,3).transpose()*inputFeetPositionsk.block(0,3,3,1))*measurementForcesk.segment<3>(0);
+//        // Compute Zmp from sensor and filter
+//        for(unsigned i=0;i<contactNbr;++i)
+//        {
+//            measurementForcesk = y[k].block<1,6>(0,measurementSizeBase+withUnmodeledForces_*6+i*6).transpose();
+//            filteredForcesk = x.segment<6>(stateObservation::flexibilityEstimation::IMUElasticLocalFrameDynamicalSystem::state::fc+i*6);
+//            inputFeetPositionsk = kine::vector6ToHomogeneousMatrix(u[k].block<1,6>(0,inputSizeBase+i*12)).transpose();
 //
-//            filteredForcesk.segment<3>(0) = inputFeetPositionsk.block(0,0,3,3).transpose()*filteredForcesk.segment<3>(0);
-//            filteredForcesk.segment<3>(3) = inputFeetPositionsk.block(0,0,3,3).transpose()*filteredForcesk.segment<3>(3)
-//                                               -kine::skewSymmetric(inputFeetPositionsk.block(0,0,3,3).transpose()*inputFeetPositionsk.block(0,3,3,1))*filteredForcesk.segment<3>(0);
+////            measurementForcesk.segment<3>(0) = inputFeetPositionsk.block(0,0,3,3).transpose()*measurementForcesk.segment<3>(0);
+////            measurementForcesk.segment<3>(3) = inputFeetPositionsk.block(0,0,3,3).transpose()*measurementForcesk.segment<3>(3)
+////                                               +kine::skewSymmetric(inputFeetPositionsk.block(0,0,3,3).transpose()*inputFeetPositionsk.block(0,3,3,1))*measurementForcesk.segment<3>(0);
+////
+////            filteredForcesk.segment<3>(0) = inputFeetPositionsk.block(0,0,3,3).transpose()*filteredForcesk.segment<3>(0);
+////            filteredForcesk.segment<3>(3) = inputFeetPositionsk.block(0,0,3,3).transpose()*filteredForcesk.segment<3>(3)
+////                                               -kine::skewSymmetric(inputFeetPositionsk.block(0,0,3,3).transpose()*inputFeetPositionsk.block(0,3,3,1))*filteredForcesk.segment<3>(0);
+//
+//            measurementForces.setValue(measurementForcesk,i);
+//            filteredForces.setValue(filteredForcesk,i);
+//            stateObservation::Matrix4 identity; identity.setIdentity();
+//            inputFeetPositions.setValue(identity,i);
+//        }
+//        sensorZmp=computeZmp(contactNbr, measurementForces, inputFeetPositions);
+//        filteredZmp=computeZmp(contactNbr, filteredForces, inputFeetPositions);
 
-            measurementForces.setValue(measurementForcesk,i);
-            filteredForces.setValue(filteredForcesk,i);
-            stateObservation::Matrix4 identity; identity.setIdentity();
-            inputFeetPositions.setValue(identity,i);
-        }
-        sensorZmp=computeZmp(contactNbr, measurementForces, inputFeetPositions);
-        filteredZmp=computeZmp(contactNbr, filteredForces, inputFeetPositions);
-
+        std::cout << "coucou" << std::endl;
+        x_input.setValue((state[k].block(0,0,1,6)).transpose(),k);
         x_output.setValue(x,k);
-        xPredicted_output.setValue(xPredicted,k);
+//        xPredicted_output.setValue(xPredicted,k);
         y_output.setValue(y[k],k);
         u_output.setValue(u[k],k);
-        sensorZmp_output.setValue(sensorZmp,k);
-        filteredZmp_output.setValue(filteredZmp,k);
-        referenceZmp_output.setValue(zmpRef[k],k);
+//        sensorZmp_output.setValue(sensorZmp,k);
+//        filteredZmp_output.setValue(filteredZmp,k);
+//        referenceZmp_output.setValue(zmpRef[k],k);
     }
 
     std::cout << "Completed "<<std::endl;
 
     x_output.writeInFile("state.dat");
-    xPredicted_output.writeInFile("statePredicted.dat");
+    x_input.writeInFile("stateIn.dat");
+//    xPredicted_output.writeInFile("statePredicted.dat");
     y_output.writeInFile("measurement.dat");
     u_output.writeInFile("input.dat");
-    sensorZmp_output.writeInFile("sensorZmp.dat");
-    filteredZmp_output.writeInFile("filteredZmp.dat");
-    referenceZmp_output.writeInFile("referenceZmp.dat");
+//    sensorZmp_output.writeInFile("sensorZmp.dat");
+//    filteredZmp_output.writeInFile("filteredZmp.dat");
+//    referenceZmp_output.writeInFile("referenceZmp.dat");
 
     return 1;
 }
