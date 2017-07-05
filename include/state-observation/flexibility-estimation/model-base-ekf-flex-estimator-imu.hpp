@@ -19,6 +19,8 @@
 #include <state-observation/flexibility-estimation/imu-elastic-local-frame-dynamical-system.hpp>
 //#include <state-observation/flexibility-estimation/imu-fixed-contact-dynamical-system.hpp>
 
+#include <iostream>
+
 namespace stateObservation
 {
 namespace flexibilityEstimation
@@ -235,6 +237,7 @@ namespace flexibilityEstimation
         {
             return limitOn_;
         }
+
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

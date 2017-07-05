@@ -56,6 +56,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   dynamical-system-functor-base.cpp
   dynamical-system-simulator.cpp
   imu-dynamical-system.cpp
+  stop-watch.cpp
   imu-magnetometer-dynamical-system.cpp
   flexibility-estimator-base.cpp
   ekf-flexibility-estimator-base.cpp
@@ -81,5 +82,10 @@ ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.0")
 INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIRS})
 SET(LINEAR_ALGEBRA_LIB_FOUND 1)
 SET(_EIGEN_MATRIX_FOUND_ 1)
+
+SET(LIBRARY_NAME ${PROJECT_NAME})
+ADD_DEPENDENCIES(${LIBRARY_NAME} sot-torque-control)
+TARGET_LINK_LIBRARIES(${LIBRARY_NAME} sot-torque-control)
+PKG_CONFIG_USE_DEPENDENCY(${LIBRARY_NAME} sot-torque-control)
 
 

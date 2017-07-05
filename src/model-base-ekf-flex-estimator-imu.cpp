@@ -1,6 +1,11 @@
 #include <state-observation/flexibility-estimation/model-base-ekf-flex-estimator-imu.hpp>
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
 
+#include <sot-state-observation/tools/stop-watch.hh>
+
+#define PROFILE_COMPUTE_JACOBIANS "ModelBaseEKFFlexEstimator: compute state and measurement dynamics jacobians: "
+
+
 const double dxFactor = 1.0e-8;
 const int stateSize = 35;
 
@@ -351,8 +356,10 @@ namespace flexibilityEstimation
 
               //ekf_.setA(ekf_.getAMatrixFD(dx_));
               //ekf_.setC(ekf_.getCMatrixFD(dx_));
+              getProfiler().start(PROFILE_COMPUTE_JACOBIANS);
               ekf_.setA(functor_.stateDynamicsJacobian());
               ekf_.setC(functor_.measureDynamicsJacobian());
+              getProfiler().stop(PROFILE_COMPUTE_JACOBIANS);
             }
 
             ///regulate the part of orientation vector in the state vector

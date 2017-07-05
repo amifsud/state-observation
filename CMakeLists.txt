@@ -28,6 +28,9 @@ SET(PROJECT_URL "")
 
 SET(CUSTOM_HEADER_DIR "${PROJECT_NAME}")
 
+# Search for dependencies.
+ADD_REQUIRED_DEPENDENCY("sot-torque-control")
+
 SET(${PROJECT_NAME}_HEADERS
   include/state-observation/observer/extended-kalman-filter.hpp
   include/state-observation/observer/kalman-filter-base.hpp
@@ -55,6 +58,7 @@ SET(${PROJECT_NAME}_HEADERS
   include/state-observation/sensors-simulation/algorithm/magnetic-field.hpp
   include/state-observation/tools/definitions.hpp
   include/state-observation/tools/definitions.hxx
+  include/state-observation/tools/stop-watch.hh
   include/state-observation/tools/hrp2.hpp
   include/state-observation/tools/probability-law-simulation.hpp
   include/state-observation/tools/miscellaneous-algorithms.hpp
