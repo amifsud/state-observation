@@ -163,7 +163,7 @@ namespace flexibilityEstimation
         }
 
         virtual void setUnmodeledForceVariance(double d);
-        virtual void setForceVariance(double d);
+        virtual void setForceVariance(stateObservation::Matrix d);
         virtual void setAbsolutePosVariance(double d);
 
         /// sets the sampling period
@@ -252,7 +252,7 @@ namespace flexibilityEstimation
         double computeFlexibilityTime_;
 
         double unmodeledForceVariance_;
-        double forceVariance_;//force sensor variance
+        stateObservation::Matrix forceVariances_;//force sensor variance
         double absPosVariance_;
 
         bool useFTSensors_;

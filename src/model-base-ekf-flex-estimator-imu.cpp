@@ -21,7 +21,6 @@ namespace flexibilityEstimation
         functor_(dt),
         stateSize_(stateSize),
         unmodeledForceVariance_(1e-6),
-        forceVariance_(1e-4),
         absPosVariance_(1e-4),
         useFTSensors_(false),
         withAbsolutePos_(false),
@@ -29,6 +28,9 @@ namespace flexibilityEstimation
         withUnmodeledMeasurements_(false),
         limitOn_(true)
     {
+        stateObservation::Matrix I; I.resize(12,12); I.setIdentity();
+        forceVariances_ = 1e-4*I;
+
         ekf_.setMeasureSize(functor_.getMeasurementSize());
         ekf_.setStateSize(stateSize_);
         ekf_.setInputSize(functor_.getInputSize());
@@ -281,8 +283,7 @@ namespace flexibilityEstimation
         {
           R_.block(currIndex,0,functor_.getContactsNumber()*6,currIndex).setZero();
           R_.block(0,currIndex,currIndex,functor_.getContactsNumber()*6).setZero();
-          R_.block(currIndex,currIndex,functor_.getContactsNumber()*6,functor_.getContactsNumber()*6) =
-            Matrix::Identity(functor_.getContactsNumber()*6,functor_.getContactsNumber()*6)*forceVariance_;
+          R_.block(currIndex,currIndex,functor_.getContactsNumber()*6,functor_.getContactsNumber()*6) = forceVariances_.block(0,0,functor_.getContactsNumber()*6,functor_.getContactsNumber()*6);
 
           currIndex += functor_.getContactsNumber()*6;
         }
@@ -555,9 +556,9 @@ namespace flexibilityEstimation
         updateCovarianceMatrix_();
     }
 
-    void ModelBaseEKFFlexEstimatorIMU::setForceVariance(double d)
+    void ModelBaseEKFFlexEstimatorIMU::setForceVariance(stateObservation::Matrix d)
     {
-        forceVariance_ = d;
+        forceVariances_ = d;
         updateCovarianceMatrix_();
     }
 

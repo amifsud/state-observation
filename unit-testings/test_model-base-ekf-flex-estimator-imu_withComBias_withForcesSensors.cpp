@@ -200,7 +200,9 @@ int test()
     R_.block(3,3,3,3)*=1.e-6;
     est.setMeasurementNoiseCovariance(R_);
     est.setUnmodeledForceVariance(1e-13);
-    est.setForceVariance(1.e-6);
+    stateObservation::Matrix I; I.resize(6,6); I.setIdentity();
+    I*=1.e-6;
+    est.setForceVariance(I);
     est.setAbsolutePosVariance(1e-4);
 
     // Process noise covariance
